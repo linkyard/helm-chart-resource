@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+source $(dirname $0)/common.sh
+
+payload=$(mktemp $TMPDIR/helm-chart-resource-request.XXXXXX)
+cat > $payload <&0
+
+setup_helm $payload
+
+chart=$(jq -r '.source.chart // ""' < $payload)
+current_ver=$(jq -r '.version.version // ""' < $payload)
+
+if [ -z "$chart" ]; then
+  echo "invalid payload (missing chart)"
+  exit 1
+fi
+
+if [ -z "$current_ver" ]; then
+  # Get latest version
+  ver=$(helm search -r "$chart[^\w-_]" | tail -n +2 | awk '{ print $2 }')
+  echo $"$ver" | jq -R '.' | jq -s "map({version: .})" >&3
+else
+  # Get all versions after current version
+  vers=$(helm search -r "$chart[^\w-_]" -v "^$current_ver" -l | tail -n +2 | tac | awk '{ print $2 }')
+  # If no versions found, reset
+  if [ -z "$vers" ]; then
+    # Return latest version if no versions were found
+    ver=$(helm search -r "$chart[^\w-_]" | tail -n +2 | awk '{ print $2 }')
+    echo $"$ver" | jq -R '.' | jq -s "map({version: .})" >&3
+  else
+    echo $"$vers" | jq -R '.' | jq -s "map({version: .})" >&3
+  fi
+fi

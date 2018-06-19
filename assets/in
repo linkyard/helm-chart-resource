@@ -1,0 +1,43 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+source $(dirname $0)/common.sh
+
+payload=$(mktemp $TMPDIR/helm-chart-resource-request.XXXXXX)
+cat > $payload <&0
+
+setup_helm $payload
+
+chart=$(jq -r '.source.chart // ""' < $payload)
+current_ver=$(jq -r '.version.version // ""' < $payload)
+untar=$(jq -r '.params.untar // false' < $payload)
+untardir=$(jq -r '.params.untardir // ""' < $payload)
+verify=$(jq -r '.params.verify // false' < $payload)
+
+if [ -z "$chart" ]; then
+  echo "invalid payload (missing chart)"
+  exit 1
+fi
+
+flags=
+if [ "$untar" = true ]; then
+  flags+="--untar "
+  if [ ! -z "$untardir" ]; then
+    flags+="--untardir $untardir "
+  fi
+fi
+if [ "$verify" = true ]; then
+  flags+="--verify "
+fi
+
+helm fetch $chart --version $current_ver -d $1 $flags
+
+metadata=$(echo $chart | jq -R "{name: \"chart\", value: .}")
+jq -n "{
+  version: {version: $(echo $current_ver | jq -R .)},
+  metadata: [$metadata]
+}" >&3
