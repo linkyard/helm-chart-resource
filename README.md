@@ -12,7 +12,7 @@ resource_types:
 - name: helm-chart
   type: docker-image
   source:
-    repository: arbourd/helm-chart-resource
+    repository: linkyard/helm-chart-resource
 ```
 
 See the [Concourse docs](https://concourse-ci.org/resource-types.html) for more details on adding `resource_types` to a pipeline config.
