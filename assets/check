@@ -26,7 +26,7 @@ if [ -z "$current_ver" ]; then
   echo $"$ver" | jq -R '.' | jq -s "map({version: .})" >&3
 else
   # Get all versions after current version
-  vers=$(helm search -r "$chart[^\w-_]" -v "^$current_ver" -l | tail -n +2 | tac | awk '{ print $2 }')
+  vers=$(helm search -r "$chart[^\w-_]" -v ">$current_ver" -l | tail -n +2 | tac | awk '{ print $2 }')
   # If no versions found, reset
   if [ -z "$vers" ]; then
     # Return latest version if no versions were found
