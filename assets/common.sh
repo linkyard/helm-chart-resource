@@ -23,8 +23,9 @@ setup_repos() {
     else
       helm repo add $name $url
     fi
-    helm repo update
   done
+
+  helm repo update
 }
 
 setup_helm() {
