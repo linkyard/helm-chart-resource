@@ -36,6 +36,10 @@ Downloads the chart that was discovered during the `check` phase as a tar.
 - `untardir`: *Optional.* Name of the directory that untar will extract to.
 - `verify`: *Optional.* Verify the package against its signature. Defaults to `false`.
 
+#### Additional files populated
+
+- `version`: Version of helm chart discovered and downloaded
+
 ### `out`: No operation.
 
 ## Examples
