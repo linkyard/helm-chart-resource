@@ -36,6 +36,9 @@ fi
 
 helm fetch $chart --version $current_ver -d $1 $flags
 
+# Additional files populated
+printf "%s" "$current_ver" > "$1/version"
+
 metadata=$(echo $chart | jq -R "{name: \"chart\", value: .}")
 jq -n "{
   version: {version: $(echo $current_ver | jq -R .)},
