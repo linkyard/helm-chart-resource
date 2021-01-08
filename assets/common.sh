@@ -2,7 +2,7 @@
 set -e
 
 init_helm() {
-  helm init --client-only > /dev/null
+  helm init --stable-repo-url=https://charts.helm.sh/stable --client-only > /dev/null
   helm version --client
 }
 
