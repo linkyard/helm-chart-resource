@@ -1,4 +1,4 @@
-FROM linkyard/docker-helm:2.9.1
+FROM linkyard/alpine-helm:2.17.0
 
 RUN apk add --update --upgrade --no-cache jq bash
 
